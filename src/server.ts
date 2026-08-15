@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { CONFIG } from './config';
 import { getDatabase } from './db/database';
 import { apiRouter } from './routes/api';
@@ -10,9 +11,26 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve Static Demo UI & Images
+// Serve Static Demo UI
 app.use(express.static(path.join(process.cwd(), 'public')));
-app.use('/data/images', express.static(path.join(process.cwd(), 'data/images')));
+
+// Explicit Image Content-Type Delivery Handler (Guarantees 100% Crisp Vector/Image Rendering)
+app.get('/data/images/:filename', (req: Request, res: Response) => {
+  const filename = req.params.filename;
+  const filePath = path.join(process.cwd(), 'data/images', filename);
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('Image Not Found');
+  }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  if (content.trim().startsWith('<svg')) {
+    res.setHeader('Content-Type', 'image/svg+xml');
+  } else {
+    res.setHeader('Content-Type', 'image/jpeg');
+  }
+  res.send(content);
+});
 
 // Initialize Database connection on boot
 getDatabase();

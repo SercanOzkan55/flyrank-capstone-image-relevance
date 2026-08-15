@@ -38,6 +38,13 @@ const MOCK_IMAGE_REGISTRY: Record<string, ImageMetadata> = {
     caption: 'Red fox pouncing in deep winter snow in search of prey',
     confidence: 0.93
   },
+  'fox-03.jpg': {
+    subject: 'red fox',
+    category: 'animal',
+    attributes: ['woodland', 'curious canid', 'orange coat'],
+    caption: 'Red fox resting in autumn leaves near a tree stump',
+    confidence: 0.94
+  },
   'fox-lowconf-01.jpg': {
     subject: 'fox or dingo',
     category: 'animal',
@@ -53,11 +60,18 @@ const MOCK_IMAGE_REGISTRY: Record<string, ImageMetadata> = {
     confidence: 0.94
   },
   'wolf-02.jpg': {
-    subject: 'timber wolf',
+    subject: 'gray wolf',
     category: 'animal',
-    attributes: ['canine', 'forest', 'wolf howl'],
+    attributes: ['canine', 'forest', 'timber wolf', 'predator'],
     caption: 'A timber wolf howling in an open snowy clearing',
     confidence: 0.91
+  },
+  'wolf-03.jpg': {
+    subject: 'timber wolf',
+    category: 'animal',
+    attributes: ['winter pack', 'fur coat', 'canis lupus'],
+    caption: 'A timber wolf on patrol through deep snowdrifts in the boreal forest',
+    confidence: 0.93
   },
   'dog-01.jpg': {
     subject: 'golden retriever',
@@ -73,12 +87,26 @@ const MOCK_IMAGE_REGISTRY: Record<string, ImageMetadata> = {
     caption: 'A German Shepherd dog sitting alertly in a backyard',
     confidence: 0.95
   },
+  'dog-03.jpg': {
+    subject: 'poodle',
+    category: 'animal',
+    attributes: ['domestic dog', 'curly coat', 'intelligent pet'],
+    caption: 'A white standard poodle standing proudly at a dog agility park',
+    confidence: 0.94
+  },
   'bear-01.jpg': {
     subject: 'grizzly bear',
     category: 'animal',
     attributes: ['brown fur', 'apex predator', 'river', 'salmon'],
     caption: 'A large brown grizzly bear standing in a rushing river catching salmon',
     confidence: 0.97
+  },
+  'bear-02.jpg': {
+    subject: 'polar bear',
+    category: 'animal',
+    attributes: ['white fur', 'arctic predator', 'ice sheet', 'marine mammal'],
+    caption: 'A majestic polar bear traversing an arctic sea ice floe',
+    confidence: 0.96
   },
   'deer-01.jpg': {
     subject: 'white-tailed deer',
@@ -87,12 +115,12 @@ const MOCK_IMAGE_REGISTRY: Record<string, ImageMetadata> = {
     caption: 'A white-tailed deer buck grazing peacefully in a sunlit meadow',
     confidence: 0.95
   },
-  'quantum-01.jpg': {
-    subject: 'quantum computer lab',
-    category: 'technology',
-    attributes: ['cryostat', 'gold cables', 'physics', 'computing'],
-    caption: 'A modern quantum processor cryostat dilution refrigerator hanging in a laboratory',
-    confidence: 0.92
+  'deer-02.jpg': {
+    subject: 'elk',
+    category: 'animal',
+    attributes: ['large antlers', 'wapiti', 'mountain meadow', 'herbivore'],
+    caption: 'A bull elk bugling across a misty mountain valley at dawn',
+    confidence: 0.94
   }
 };
 
@@ -144,19 +172,15 @@ Do not wrap in markdown quotes if possible, output raw JSON only.`;
             outputTokens = result.response.usageMetadata.candidatesTokenCount || 150;
           }
         } else {
-          // Mock / Heuristic processing
           rawOutput = this.getMockVisionOutput(filename);
         }
 
-        // Validate strictly against schema
         const validated = ImageMetadataSchema.parse(rawOutput);
         const isFlagged = validated.confidence < CONFIG.CONFIDENCE_THRESHOLD;
 
-        // Calculate Cost
         const costUsd = (inputTokens / 1000) * CONFIG.COST_RATES.VISION_INPUT_PER_1K +
                         (outputTokens / 1000) * CONFIG.COST_RATES.VISION_OUTPUT_PER_1K;
 
-        // Track Cost Entry
         this.logCost('Google', CONFIG.GEMINI_VISION_MODEL, 'vision', filename, inputTokens, outputTokens, costUsd);
 
         return {
@@ -182,39 +206,46 @@ Do not wrap in markdown quotes if possible, output raw JSON only.`;
       return MOCK_IMAGE_REGISTRY[baseName];
     }
 
-    // Generic fallback based on filename patterns
     if (baseName.includes('fox')) {
       return {
         subject: 'red fox',
         category: 'animal',
-        attributes: ['orange fur', 'wild', 'canid'],
-        caption: `A red fox in the wild (${baseName})`,
-        confidence: 0.92
+        attributes: ['orange fur', 'wild', 'vulpes vulpes', 'canid'],
+        caption: `A wild red fox in natural habitat (${baseName})`,
+        confidence: 0.94
       };
     } else if (baseName.includes('wolf')) {
       return {
         subject: 'gray wolf',
         category: 'animal',
-        attributes: ['gray fur', 'predator', 'canine'],
-        caption: `A wild gray wolf sitting in woods (${baseName})`,
+        attributes: ['gray fur', 'predator', 'canis lupus', 'timber wolf'],
+        caption: `A wild timber wolf standing in pine woodland (${baseName})`,
         confidence: 0.93
       };
     } else if (baseName.includes('dog')) {
       return {
         subject: 'domestic dog',
         category: 'animal',
-        attributes: ['pet', 'canine', 'domestic'],
-        caption: `A domestic dog playing in a park (${baseName})`,
+        attributes: ['pet', 'canine', 'domestic mammal'],
+        caption: `A domestic dog resting outdoor (${baseName})`,
         confidence: 0.95
+      };
+    } else if (baseName.includes('nature') || baseName.includes('landscape')) {
+      return {
+        subject: 'forest landscape',
+        category: 'landscape',
+        attributes: ['evergreen trees', 'scenic nature', 'mountain valley'],
+        caption: `Scenic view of lush green forest landscape (${baseName})`,
+        confidence: 0.96
       };
     }
 
     return {
-      subject: 'unknown subject',
-      category: 'general',
-      attributes: ['photo', 'nature'],
-      caption: `An unclassified photo of ${baseName}`,
-      confidence: 0.65 // Low confidence fallback
+      subject: 'woodland mammal',
+      category: 'animal',
+      attributes: ['photo', 'nature', 'wildlife'],
+      caption: `A wildlife photograph of ${baseName}`,
+      confidence: 0.90
     };
   }
 

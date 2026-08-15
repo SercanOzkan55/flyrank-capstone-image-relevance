@@ -3,318 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlyRank | AI Image Understanding & Content Matching Engine</title>
+  <title>FlyRank — AI Image Understanding & Content Matching Engine</title>
   
-  <!-- Modern Google Fonts -->
+  <!-- Curated Identity Typography: Fraunces + IBM Plex Sans + IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-  <!-- Top Navigation Bar & Live Telemetry -->
-  <header class="navbar">
-    <div class="nav-container">
-      <div class="brand-area">
-        <div class="logo-badge">🦊</div>
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand-lockup">
+        <div class="brand-monogram">FR</div>
         <div>
-          <h1 class="brand-title">FlyRank Matching Engine</h1>
-          <p class="brand-sub">AI Image Understanding · Semantic Vectors · Mismatch Guard</p>
+          <h1 class="brand-title">FlyRank Image Engine</h1>
+          <p class="brand-sub">Structured Vision AI · Semantic Vectors · Mismatch Guard</p>
         </div>
       </div>
       
-      <div class="telemetry-row">
-        <div class="stat-chip accent-green">
-          <span class="pulse-dot"></span>
+      <div class="metrics-strip">
+        <div class="metric-pill signal">
+          <span class="live-indicator"></span>
           <span>Shield: 100% Active</span>
         </div>
-        <div class="stat-chip accent-blue">
+        <div class="metric-pill signal">
           <span>Top-1 Precision: 100.0%</span>
         </div>
-        <div class="stat-chip">
-          <span>Images: <strong id="statTotalImages">50</strong></span>
+        <div class="metric-pill">
+          <span>Corpus: <strong id="statTotalImages">50</strong></span>
         </div>
-        <div class="stat-chip">
+        <div class="metric-pill">
           <span>Posts: <strong id="statTotalPosts">6</strong></span>
         </div>
-        <div class="stat-chip">
-          <span>Total Cost: <strong id="statTotalCost">$0.0041 USD</strong></span>
+        <div class="metric-pill stamp">
+          <span>AI Cost: <strong id="statTotalCost">$0.0041 USD</strong></span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Navigation Workspaces Tabs -->
-  <nav class="tab-navigation">
-    <div class="tab-nav-inner">
-      <button class="nav-tab-item active" onclick="switchTab('tabStudio', this)">
-        <span>🎯</span> Article Matching Studio
-      </button>
-      <button class="nav-tab-item" onclick="switchTab('tabPlayground', this)">
-        <span>✍️</span> Custom Article Playground
-      </button>
-      <button class="nav-tab-item" onclick="switchTab('tabGallery', this)">
-        <span>🖼️</span> Image Corpus Gallery (~50)
-      </button>
-      <button class="nav-tab-item" onclick="switchTab('tabStretch', this)">
-        <span>✨</span> Stretch Goals Studio
-      </button>
-      <button class="nav-tab-item" onclick="switchTab('tabEval', this)">
-        <span>📊</span> Precision Benchmark
-      </button>
-      <button class="nav-tab-item" onclick="switchTab('tabCosts', this)">
-        <span>💰</span> AI Token & Cost Telemetry
-      </button>
+  <!-- Navigation Ribbon -->
+  <nav class="nav-ribbon">
+    <div class="nav-ribbon-inner">
+      <button class="nav-link active" onclick="switchTab('tabStudio', this)">Article Matching Studio</button>
+      <button class="nav-link" onclick="switchTab('tabPlayground', this)">Custom Article Matcher</button>
+      <button class="nav-link" onclick="switchTab('tabGallery', this)">Image Library (~50)</button>
+      <button class="nav-link" onclick="switchTab('tabStretch', this)">Stretch Features</button>
+      <button class="nav-link" onclick="switchTab('tabEval', this)">Precision Benchmark</button>
+      <button class="nav-link" onclick="switchTab('tabCosts', this)">Cost Ledger</button>
     </div>
   </nav>
 
-  <!-- Main Workspaces Container -->
-  <main class="workspace-wrapper">
+  <!-- Workspaces -->
+  <main class="workspace-container">
 
-    <!-- WORKSPACE 1: ARTICLE MATCHING STUDIO -->
-    <section id="tabStudio" class="workspace-panel active">
-      <div class="grid-studio">
+    <!-- TAB 1: STUDIO -->
+    <section id="tabStudio" class="workspace-view active">
+      <div class="split-grid">
         
-        <!-- Left: Article Context & Controls -->
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>📖</span> Article Context</h2>
-            <span id="postCategoryBadge" class="cand-pill accepted">ANIMAL</span>
+        <!-- Left: Article Context -->
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">Article Context</h2>
+            <span id="postCategoryBadge" class="status-badge accepted">ANIMAL</span>
           </div>
 
-          <div class="form-field">
-            <label class="field-label">Select Blog Post:</label>
-            <select id="studioPostSelect" class="select-ctrl"></select>
+          <div class="control-group">
+            <label class="control-label">Select Article:</label>
+            <select id="studioPostSelect" class="select-box"></select>
           </div>
 
-          <div class="form-field">
-            <label class="field-label">Target Topic Title:</label>
-            <h3 id="postTitlePreview" style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 8px;">The Behavior and Habitat of Red Foxes</h3>
-            <p id="postContentPreview" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;"></p>
+          <div class="control-group">
+            <label class="control-label">Article Title & Body:</label>
+            <h3 id="postTitlePreview" style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--text-ink); margin-bottom: 8px;">The Behavior and Habitat of Red Foxes</h3>
+            <p id="postContentPreview" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;"></p>
           </div>
 
-          <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.8rem;">
-            <span style="color: var(--text-muted);">Expected Ground Truth Subject:</span>
-            <strong id="postExpectedSubject" style="color: var(--primary);">red fox</strong>
+          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-subtle); margin-bottom: 20px; font-size: 0.8rem;">
+            <span style="color: var(--text-dim);">Expected Ground Truth Subject:</span>
+            <strong id="postExpectedSubject" style="color: var(--signal); font-family: var(--font-mono); margin-left: 6px;">red fox</strong>
           </div>
 
           <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
-            <button class="btn-primary" onclick="runStudioMatching()">
-              <span>🚀</span> Run Semantic Matching
+            <button class="btn btn-signal" onclick="runStudioMatching()">
+              <span>⚡</span> Execute Semantic Matching
             </button>
-            <button class="btn-danger" onclick="runForcedWolfTest()">
+            <button class="btn btn-stamp" onclick="runForcedWolfTest()">
               <span>🛑</span> Force Wolf Mismatch (Probe 3)
             </button>
           </div>
 
-          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.06); margin-bottom: 20px;">
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin-bottom: 20px;">
 
-          <div class="card-header" style="margin-bottom: 12px; border: none;">
-            <h3 style="font-size: 0.95rem; font-weight: 700;">Human-in-the-Loop Review Trail</h3>
+          <div class="manifest-card-header" style="margin-bottom: 12px; border: none; padding: 0;">
+            <h3 style="font-size: 0.95rem; font-weight: 600;">Human-in-the-Loop Audit Trail</h3>
           </div>
-          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
-            Record human editorial approval or rejection with audit logging:
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+            Record editorial approval or rejection for compliance:
           </p>
           <div style="display: flex; gap: 10px;">
-            <button class="btn-success" onclick="submitReviewDecision('APPROVED')">✓ Approve Suggestion</button>
-            <button class="btn-danger" onclick="submitReviewDecision('REJECTED')">✕ Reject Suggestion</button>
+            <button class="btn btn-signal" onclick="submitReview('APPROVED')">✓ Approve Pairing</button>
+            <button class="btn btn-stamp" onclick="submitReview('REJECTED')">✕ Reject Pairing</button>
           </div>
         </div>
 
-        <!-- Right: Mismatch Guard Decision & Candidate Ranking -->
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>🛡️</span> Mismatch Guard Safety Decision</h2>
+        <!-- Right: Safety Decision & Candidates -->
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">Mismatch Guard Verification</h2>
           </div>
 
           <!-- Dynamic Guard Decision Banner -->
           <div id="guardBanner" class="guard-banner accepted" style="display: none;">
-            <span id="guardIcon" class="guard-icon">✅</span>
-            <div class="guard-content">
+            <div>
               <strong id="guardTitle">STATUS</strong>
               <p id="guardDesc"></p>
             </div>
           </div>
 
-          <!-- Featured Suggested Image -->
-          <div id="featuredMatchCard" class="featured-match-card" style="display: none;">
-            <div id="featuredImgContainer" class="featured-img-frame"></div>
-            <div class="featured-info">
-              <h3 id="featuredSubject">Red Fox</h3>
-              <p id="featuredCaption"></p>
-              <div id="featuredSimilarity" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--primary); margin-bottom: 10px;"></div>
-              <div id="featuredTags" class="tags-row"></div>
+          <!-- Suggested Image Preview Frame -->
+          <div id="suggestedItemFrame" class="suggested-item-frame" style="display: none;">
+            <div id="suggestedImgBox" class="suggested-img-container"></div>
+            <div class="suggested-info">
+              <h3 id="suggestedSubject">Red Fox</h3>
+              <p id="suggestedCaption"></p>
+              <div id="suggestedSimilarity" style="font-family: var(--font-mono); font-size: 0.76rem; color: var(--signal);"></div>
             </div>
           </div>
 
-          <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: var(--text-secondary);">
+          <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
             Ranked Candidate Images (Cosine Similarity × Guard Check)
           </h3>
           <div id="candidatesFeed">
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Click "Run Semantic Matching" to query candidates.</p>
+            <p style="color: var(--text-dim); font-size: 0.84rem;">Click "Execute Semantic Matching" to rank candidate images and run safety verification.</p>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- WORKSPACE 2: CUSTOM ARTICLE PLAYGROUND -->
-    <section id="tabPlayground" class="workspace-panel">
-      <div class="grid-studio">
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>✍️</span> Custom Article Playground</h2>
+    <!-- TAB 2: PLAYGROUND -->
+    <section id="tabPlayground" class="workspace-view">
+      <div class="split-grid">
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">Custom Article Matcher</h2>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">
-            Type any article title & content. The engine will instantly vectorize your text, search the image corpus, and evaluate every candidate with the Mismatch Guard.
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 18px;">
+            Provide any article title & content. The engine vectorizes your text and evaluates the entire corpus through the Mismatch Guard.
           </p>
 
-          <div class="form-field">
-            <label class="field-label">Custom Article Title:</label>
-            <input id="customTitle" type="text" class="input-ctrl" value="Wildlife in Deep Autumn Forests">
+          <div class="control-group">
+            <label class="control-label">Article Title:</label>
+            <input id="customTitle" type="text" class="text-input" value="Wildlife in Deep Autumn Forests">
           </div>
 
-          <div class="form-field">
-            <label class="field-label">Category:</label>
-            <select id="customCategory" class="select-ctrl">
+          <div class="control-group">
+            <label class="control-label">Category:</label>
+            <select id="customCategory" class="select-box">
               <option value="animal">Animal</option>
               <option value="technology">Technology</option>
               <option value="landscape">Landscape</option>
             </select>
           </div>
 
-          <div class="form-field">
-            <label class="field-label">Article Body Content:</label>
-            <textarea id="customContent" class="textarea-ctrl" rows="5">During the colder autumn months, red foxes hunt small rodents along the forest floor while displaying their thick orange winter coats.</textarea>
+          <div class="control-group">
+            <label class="control-label">Body Content:</label>
+            <textarea id="customContent" class="text-area" rows="5">During the colder autumn months, red foxes hunt small rodents along the forest floor while displaying their thick orange winter coats.</textarea>
           </div>
 
-          <div class="form-field">
-            <label class="field-label">Target Subject (Optional):</label>
-            <input id="customExpectedSubject" type="text" class="input-ctrl" value="red fox">
+          <div class="control-group">
+            <label class="control-label">Target Subject (Optional):</label>
+            <input id="customExpectedSubject" type="text" class="text-input" value="red fox">
           </div>
 
-          <button class="btn-primary" onclick="runCustomPlaygroundMatch()">
+          <button class="btn btn-signal" onclick="runCustomPlayground()">
             <span>⚡</span> Analyze & Match Live
           </button>
         </div>
 
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>🔍</span> Real-Time AI Vector & Guard Response</h2>
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">AI Vector & Guard Diagnostics</h2>
           </div>
-          <div id="customResultOutput" class="code-inspector" style="max-height: 480px;">
-            Awaiting input. Click "Analyze & Match Live" to test custom article pairing.
+          <div id="customPlaygroundOutput" class="code-output">
+            Awaiting custom input. Click "Analyze & Match Live" to test.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- WORKSPACE 3: IMAGE CORPUS GALLERY -->
-    <section id="tabGallery" class="workspace-panel">
-      <div class="glass-card">
-        <div class="card-header">
-          <h2 class="card-title"><span>🖼️</span> Ingested Image Corpus (~50 Illustrated Images)</h2>
-          <button class="btn-secondary" onclick="loadImages()">🔄 Refresh</button>
+    <!-- TAB 3: GALLERY -->
+    <section id="tabGallery" class="workspace-view">
+      <div class="manifest-card">
+        <div class="manifest-card-header">
+          <h2 class="manifest-card-title">Ingested Image Library (~50 Corpus)</h2>
+          <button class="btn btn-neutral" onclick="loadImages()">🔄 Reload</button>
         </div>
 
-        <div class="corpus-toolbar">
-          <div class="category-filter-pills">
-            <button class="cat-pill active" onclick="filterCategory('all', this)">All</button>
-            <button class="cat-pill" onclick="filterCategory('fox', this)">🦊 Foxes</button>
-            <button class="cat-pill" onclick="filterCategory('wolf', this)">🐺 Wolves</button>
-            <button class="cat-pill" onclick="filterCategory('dog', this)">🐕 Dogs</button>
-            <button class="cat-pill" onclick="filterCategory('bear', this)">🐻 Bears</button>
-            <button class="cat-pill" onclick="filterCategory('deer', this)">🦌 Deer</button>
-            <button class="cat-pill" onclick="filterCategory('technology', this)">⚛️ Tech</button>
+        <div class="gallery-toolbar">
+          <div class="category-pills-row">
+            <button class="filter-pill active" onclick="filterCategory('all', this)">All</button>
+            <button class="filter-pill" onclick="filterCategory('fox', this)">Foxes</button>
+            <button class="filter-pill" onclick="filterCategory('wolf', this)">Wolves</button>
+            <button class="filter-pill" onclick="filterCategory('dog', this)">Dogs</button>
+            <button class="filter-pill" onclick="filterCategory('bear', this)">Bears</button>
+            <button class="filter-pill" onclick="filterCategory('deer', this)">Deer</button>
+            <button class="filter-pill" onclick="filterCategory('landscape', this)">Nature</button>
           </div>
 
           <div style="width: 260px;">
-            <input id="gallerySearchInput" type="text" class="input-ctrl" placeholder="Search filenames, tags..." oninput="renderImagesGallery()">
+            <input id="gallerySearchInput" type="text" class="text-input" placeholder="Search filenames, subjects..." oninput="renderGallery()">
           </div>
         </div>
 
-        <div id="galleryCardsGrid" class="image-cards-grid"></div>
+        <div id="galleryGrid" class="gallery-grid"></div>
       </div>
     </section>
 
-    <!-- WORKSPACE 4: STRETCH GOALS STUDIO -->
-    <section id="tabStretch" class="workspace-panel">
-      <div class="grid-studio">
-        
-        <!-- Stretch 1: Alt Text -->
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>✨</span> Stretch 1: WCAG & SEO Alt-Text Generator</h2>
+    <!-- TAB 4: STRETCH GOALS -->
+    <section id="tabStretch" class="workspace-view">
+      <div class="split-grid">
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">WCAG & SEO Alt-Text Generator</h2>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-            Synthesizes vision metadata attributes with article context into WCAG-accessible, keyword-rich image descriptions.
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 16px;">
+            Synthesizes structured vision attributes with article context into WCAG-compliant image descriptions.
           </p>
-          <button class="btn-primary" onclick="runAltTextDemo()">Generate Alt-Text for Red Fox Image</button>
-          <div id="stretchAltTextOutput" class="code-inspector" style="margin-top: 16px;">Click button to generate...</div>
+          <button class="btn btn-signal" onclick="runAltTextDemo()">Generate Alt-Text for Red Fox</button>
+          <div id="stretchAltOutput" class="code-output" style="margin-top: 16px;">Click button to generate...</div>
         </div>
 
-        <!-- Stretch 2: Near-Duplicate Detection -->
-        <div class="glass-card">
-          <div class="card-header">
-            <h2 class="card-title"><span>✨</span> Stretch 2: Near-Duplicate Detection</h2>
+        <div class="manifest-card">
+          <div class="manifest-card-header">
+            <h2 class="manifest-card-title">Near-Duplicate Vector Detection</h2>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 16px;">
             Identifies library redundancy by scanning pairwise vector cosine distances (&ge; 0.90).
           </p>
-          <button class="btn-primary" onclick="runDuplicateScan()">Scan Library for Duplicates</button>
-          <div id="stretchDuplicatesOutput" class="code-inspector" style="margin-top: 16px;">Click button to scan...</div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- WORKSPACE 5: EVALUATION BENCHMARK -->
-    <section id="tabEval" class="workspace-panel">
-      <div class="glass-card">
-        <div class="card-header">
-          <h2 class="card-title"><span>📊</span> Top-1 Precision Benchmark Suite (Probe 5)</h2>
-          <button class="btn-primary" onclick="runEvalBenchmark()">▶ Run Evaluation</button>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
-            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Top-1 Precision</div>
-            <div id="evalMetricScore" style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 4px;">100.0%</div>
-          </div>
-          <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
-            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Mismatch Rejection Rate</div>
-            <div id="evalRejectionsScore" style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">100.0%</div>
-          </div>
-        </div>
-
-        <div id="evalOutputJson" class="code-inspector" style="max-height: 400px;">
-          Click "Run Evaluation" to calculate precision on the labeled ground truth dataset.
+          <button class="btn btn-signal" onclick="runDuplicateScan()">Scan Library for Duplicates</button>
+          <div id="stretchDupeOutput" class="code-output" style="margin-top: 16px;">Click button to scan...</div>
         </div>
       </div>
     </section>
 
-    <!-- WORKSPACE 6: COST TELEMETRY -->
-    <section id="tabCosts" class="workspace-panel">
-      <div class="glass-card">
-        <div class="card-header">
-          <h2 class="card-title"><span>💰</span> Per-Call AI Token & Cost Telemetry (Probe 6)</h2>
-          <button class="btn-secondary" onclick="loadCostRecords()">🔄 Refresh Ledger</button>
+    <!-- TAB 5: EVALUATION -->
+    <section id="tabEval" class="workspace-view">
+      <div class="manifest-card">
+        <div class="manifest-card-header">
+          <h2 class="manifest-card-title">Top-1 Precision Benchmark (Probe 5)</h2>
+          <button class="btn btn-signal" onclick="runEvalBenchmark()">▶ Execute Benchmark</button>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
-            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Total Incurred Cost</div>
-            <div id="costStatTotal" style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">$0.004125 USD</div>
+          <div style="background: var(--bg-input); padding: 18px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Top-1 Precision</div>
+            <div id="evalScoreVal" style="font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: #4ade80; margin-top: 4px;">100.0%</div>
           </div>
-          <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
-            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Total Model Calls</div>
-            <div id="costStatCalls" style="font-size: 1.8rem; font-weight: 800; color: #f8fafc; margin-top: 4px;">56 Calls</div>
+          <div style="background: var(--bg-input); padding: 18px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Mismatch Rejection Rate</div>
+            <div id="evalRejectionVal" style="font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--signal); margin-top: 4px;">100.0%</div>
           </div>
         </div>
 
-        <div id="costOutputJson" class="code-inspector" style="max-height: 400px;">
+        <div id="evalJson" class="code-output">
+          Click "Execute Benchmark" to evaluate precision on the labeled dataset.
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: COSTS -->
+    <section id="tabCosts" class="workspace-view">
+      <div class="manifest-card">
+        <div class="manifest-card-header">
+          <h2 class="manifest-card-title">AI Token & Cost Telemetry (Probe 6)</h2>
+          <button class="btn btn-neutral" onclick="loadCostRecords()">🔄 Refresh Ledger</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: var(--bg-input); padding: 18px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Total Incurred Cost</div>
+            <div id="costTotalVal" style="font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--signal); margin-top: 4px;">$0.004125 USD</div>
+          </div>
+          <div style="background: var(--bg-input); padding: 18px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Model Invocations</div>
+            <div id="costCallsVal" style="font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--text-ink); margin-top: 4px;">56 Calls</div>
+          </div>
+        </div>
+
+        <div id="costsJson" class="code-output">
           Loading cost records...
         </div>
       </div>
@@ -323,14 +305,14 @@
   </main>
 
   <!-- Image Detail Inspector Modal -->
-  <div id="imageModal" class="modal-overlay" onclick="closeImageModal()">
-    <div class="modal-card" onclick="event.stopPropagation()">
+  <div id="imageBackdrop" class="modal-backdrop" onclick="closeImageModal()">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 id="modalSubject" style="font-size: 1.15rem; font-weight: 700;">Image Metadata</h3>
-        <button onclick="closeImageModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">&times;</button>
+        <h3 id="modalSubject" style="font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600;">Image Metadata</h3>
+        <button onclick="closeImageModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;">&times;</button>
       </div>
-      <div id="modalImageThumb" style="margin-bottom: 16px;"></div>
-      <div id="modalDetails" class="code-inspector" style="max-height: 300px;"></div>
+      <div id="modalThumb" style="margin-bottom: 16px;"></div>
+      <div id="modalCode" class="code-output"></div>
     </div>
   </div>
 

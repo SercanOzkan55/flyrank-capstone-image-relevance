@@ -1,11 +1,10 @@
-// FlyRank Capstone Client Application
+// FlyRank Editorial Matching Engine Client
 
 let allPosts = [];
 let allImages = [];
-let activeCategoryFilter = 'all';
-let currentSuggestion = null;
+let activeFilter = 'all';
+let activeSuggestion = null;
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchTelemetry();
   await loadPosts();
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupPostSelector();
 });
 
-// 1. Fetch System Stats & Telemetry
+// 1. Telemetry Bar
 async function fetchTelemetry() {
   try {
     const res = await fetch('/api/health');
@@ -28,20 +27,20 @@ async function fetchTelemetry() {
   }
 }
 
-// 2. Tab Navigation Switcher
+// 2. Navigation Switcher
 function switchTab(tabId, btnElem) {
-  document.querySelectorAll('.nav-tab-item').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.workspace-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.workspace-view').forEach(p => p.classList.remove('active'));
 
   if (btnElem) btnElem.classList.add('active');
   const target = document.getElementById(tabId);
   if (target) target.classList.add('active');
 
-  if (tabId === 'tabGallery') renderImagesGallery();
+  if (tabId === 'tabGallery') renderGallery();
   if (tabId === 'tabCosts') loadCostRecords();
 }
 
-// 3. Load Blog Posts
+// 3. Load Posts
 async function loadPosts() {
   try {
     const res = await fetch('/api/posts');
@@ -57,7 +56,7 @@ function renderPostSelector() {
   const select = document.getElementById('studioPostSelect');
   if (!select) return;
   select.innerHTML = allPosts.map(p => `
-    <option value="${p.id}">${getCategoryEmoji(p.category)} ${p.title}</option>
+    <option value="${p.id}">${p.title}</option>
   `).join('');
 
   if (allPosts.length > 0) {
@@ -83,34 +82,33 @@ function selectPost(postId) {
   document.getElementById('postContentPreview').innerText = post.content;
   document.getElementById('postExpectedSubject').innerText = post.expected_subject;
   
-  // Clear previous output
   document.getElementById('guardBanner').style.display = 'none';
-  document.getElementById('featuredMatchCard').style.display = 'none';
-  document.getElementById('candidatesFeed').innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Click "Run Semantic Matching" to fetch and evaluate candidate images against safety guard.</p>';
+  document.getElementById('suggestedItemFrame').style.display = 'none';
+  document.getElementById('candidatesFeed').innerHTML = '<p style="color: var(--text-dim); font-size: 0.84rem;">Click "Execute Semantic Matching" to rank candidate images and run safety verification.</p>';
 }
 
-// 4. Query Matches for Selected Post
+// 4. Query Matches
 async function runStudioMatching() {
   const select = document.getElementById('studioPostSelect');
   const postId = select.value;
   if (!postId) return;
 
   const feed = document.getElementById('candidatesFeed');
-  feed.innerHTML = '<p style="color: var(--primary); font-size: 0.85rem;">⚡ Computing vector cosine similarities and evaluating Mismatch Guard rules...</p>';
+  feed.innerHTML = '<p style="color: var(--signal); font-size: 0.84rem;">Computing vector cosine similarities and evaluating Mismatch Guard...</p>';
 
   try {
     const res = await fetch(`/api/posts/${postId}/images`);
     const data = await res.json();
     renderMatchingResult(data);
   } catch (err) {
-    feed.innerHTML = `<p style="color: var(--danger);">Failed to execute matching: ${err.message}</p>`;
+    feed.innerHTML = `<p style="color: var(--stamp);">Failed to query matches: ${err.message}</p>`;
   }
 }
 
-// 5. Force Candidate Wolf Mismatch (Probe 3)
+// 5. Force Wolf Candidate Test (Probe 3)
 async function runForcedWolfTest() {
   const feed = document.getElementById('candidatesFeed');
-  feed.innerHTML = '<p style="color: var(--danger); font-size: 0.85rem;">🛑 Forcing gray wolf candidate against Red Fox post...</p>';
+  feed.innerHTML = '<p style="color: var(--stamp); font-size: 0.84rem;">Forcing gray wolf candidate against Red Fox post...</p>';
 
   try {
     const res = await fetch(`/api/posts/red-fox-behavior/force-match`, {
@@ -121,90 +119,77 @@ async function runForcedWolfTest() {
     const data = await res.json();
     renderMatchingResult(data, true);
   } catch (err) {
-    feed.innerHTML = `<p style="color: var(--danger);">Forced test failed: ${err.message}</p>`;
+    feed.innerHTML = `<p style="color: var(--stamp);">Forced test error: ${err.message}</p>`;
   }
 }
 
-// 6. Render Matching and Mismatch Guard Results
+// 6. Render Matching Results
 function renderMatchingResult(data, isForced = false) {
   const banner = document.getElementById('guardBanner');
-  const bannerIcon = document.getElementById('guardIcon');
   const bannerTitle = document.getElementById('guardTitle');
   const bannerDesc = document.getElementById('guardDesc');
-  const featuredCard = document.getElementById('featuredMatchCard');
+  const featuredFrame = document.getElementById('suggestedItemFrame');
   const feed = document.getElementById('candidatesFeed');
 
   banner.style.display = 'flex';
 
   if (data.status === 'SUGGESTED') {
     banner.className = 'guard-banner accepted';
-    bannerIcon.innerText = '✅';
     bannerTitle.innerText = 'MATCH ACCEPTED — CLEARED ALL SAFETY GUARDS';
     bannerDesc.innerText = data.reason;
 
-    featuredCard.style.display = 'grid';
-    document.getElementById('featuredImgContainer').innerHTML = `<img src="/data/images/${data.suggestedImage.filename}" alt="${data.suggestedImage.subject}">`;
-    document.getElementById('featuredSubject').innerText = data.suggestedImage.subject;
-    document.getElementById('featuredCaption').innerText = data.suggestedImage.caption;
-    document.getElementById('featuredSimilarity').innerText = `Similarity Score: ${(data.suggestedImage.similarityScore * 100).toFixed(1)}%`;
+    featuredFrame.style.display = 'grid';
+    document.getElementById('suggestedImgBox').innerHTML = `<img src="/data/images/${data.suggestedImage.filename}" alt="${data.suggestedImage.subject}">`;
+    document.getElementById('suggestedSubject').innerText = data.suggestedImage.subject;
+    document.getElementById('suggestedCaption').innerText = data.suggestedImage.caption;
+    document.getElementById('suggestedSimilarity').innerText = `Cosine Similarity: ${(data.suggestedImage.similarityScore * 100).toFixed(1)}% | ${data.suggestedImage.filename}`;
 
-    const tagsContainer = document.getElementById('featuredTags');
-    const attrs = data.suggestedImage.attributes || [];
-    tagsContainer.innerHTML = attrs.map(a => `<span class="mini-tag">${a}</span>`).join('');
-
-    currentSuggestion = {
+    activeSuggestion = {
       suggestionId: data.suggestedImage.suggestionId,
       postId: data.postId,
       imageId: data.suggestedImage.id
     };
   } else if (data.status === 'REJECTED') {
     banner.className = 'guard-banner rejected';
-    bannerIcon.innerText = '🛑';
     bannerTitle.innerText = 'PROVABLY REJECTED BY MISMATCH GUARD';
     bannerDesc.innerText = data.reason;
-    featuredCard.style.display = 'none';
+    featuredFrame.style.display = 'none';
   } else {
     banner.className = 'guard-banner nomatch';
-    bannerIcon.innerText = '⚠️';
     bannerTitle.innerText = 'NO CONFIDENT MATCH FOUND (SAFE REFUSAL)';
     bannerDesc.innerText = data.message || data.reason;
-    featuredCard.style.display = 'none';
+    featuredFrame.style.display = 'none';
   }
 
-  // Render Candidates List
   const candidates = data.candidateScores || [];
   if (candidates.length === 0) {
-    feed.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No candidates returned.</p>';
+    feed.innerHTML = '<p style="color: var(--text-dim); font-size: 0.84rem;">No candidates returned.</p>';
     return;
   }
 
   feed.innerHTML = candidates.slice(0, 10).map((c, idx) => {
     const isPass = c.status === 'ACCEPTED';
-    const percent = (c.similarityScore * 100).toFixed(0);
     return `
-      <div class="candidate-item">
-        <div class="cand-left">
-          <div class="cand-rank">#${idx + 1}</div>
+      <div class="candidate-row">
+        <div class="candidate-left">
+          <span class="candidate-rank">0${idx + 1}</span>
           <div>
-            <div class="cand-name">${c.subject} <span style="color: var(--text-muted); font-size: 0.78rem;">(${c.filename})</span></div>
-            <div class="cand-meta">Cosine Score: ${(c.similarityScore).toFixed(4)} | Confidence: ${c.confidence}</div>
-            <div class="score-bar-wrap">
-              <div class="score-bar-fill" style="width: ${percent}%; background: ${isPass ? '#10b981' : '#f43f5e'};"></div>
-            </div>
+            <div class="candidate-title">${c.subject} <span style="color: var(--text-dim); font-size: 0.75rem;">(${c.filename})</span></div>
+            <div class="candidate-meta">Score: ${(c.similarityScore).toFixed(4)} | Confidence: ${c.confidence}</div>
           </div>
         </div>
         <div>
-          <span class="cand-pill ${isPass ? 'accepted' : 'rejected'}">${c.status}</span>
+          <span class="status-badge ${isPass ? 'accepted' : 'rejected'}">${c.status}</span>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// 7. Human-in-the-Loop Review
-async function submitReviewDecision(action) {
-  if (!currentSuggestion) {
-    alert('Please evaluate a post and select a valid suggested match first.');
+// 7. Human Review
+async function submitReview(action) {
+  if (!activeSuggestion) {
+    alert('Please evaluate a post and query matches first.');
     return;
   }
 
@@ -213,34 +198,34 @@ async function submitReviewDecision(action) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        suggestionId: currentSuggestion.suggestionId || 'sug-interactive',
-        postId: currentSuggestion.postId,
-        imageId: currentSuggestion.imageId,
+        suggestionId: activeSuggestion.suggestionId || 'sug-editorial',
+        postId: activeSuggestion.postId,
+        imageId: activeSuggestion.imageId,
         action,
-        reviewerNotes: 'Verified via Interactive Production Studio'
+        reviewerNotes: 'Verified via Editorial Studio'
       })
     });
     const data = await res.json();
-    alert(`Review Logged Successfully: ${action}\n\nReview Record ID: ${data.review.id}`);
+    alert(`Review recorded: ${action}\nID: ${data.review.id}`);
   } catch (err) {
-    alert(`Review submission error: ${err.message}`);
+    alert(`Review error: ${err.message}`);
   }
 }
 
-// 8. Custom Article Playground Matcher
-async function runCustomPlaygroundMatch() {
+// 8. Custom Playground
+async function runCustomPlayground() {
   const title = document.getElementById('customTitle').value;
   const content = document.getElementById('customContent').value;
   const category = document.getElementById('customCategory').value;
   const expectedSubject = document.getElementById('customExpectedSubject').value;
-  const outputBox = document.getElementById('customResultOutput');
+  const output = document.getElementById('customPlaygroundOutput');
 
   if (!title || !content) {
-    alert('Please enter both title and content.');
+    alert('Please provide title and body content.');
     return;
   }
 
-  outputBox.innerText = 'Analyzing custom post, computing semantic embeddings, and querying Mismatch Guard...';
+  output.innerText = 'Vectorizing content and running candidate search through Mismatch Guard...';
 
   try {
     const res = await fetch('/api/match-custom', {
@@ -249,86 +234,87 @@ async function runCustomPlaygroundMatch() {
       body: JSON.stringify({ title, content, category, expectedSubject })
     });
     const data = await res.json();
-    outputBox.innerText = JSON.stringify(data, null, 2);
+    output.innerText = JSON.stringify(data, null, 2);
   } catch (err) {
-    outputBox.innerText = `Error: ${err.message}`;
+    output.innerText = `Error: ${err.message}`;
   }
 }
 
-// 9. Load Image Corpus & Gallery
+// 9. Load & Render Gallery
 async function loadImages() {
   try {
     const res = await fetch('/api/images');
     const data = await res.json();
     allImages = data.images || [];
-    renderImagesGallery();
+    renderGallery();
   } catch (err) {
     console.error('Failed to load images:', err);
   }
 }
 
-function filterCategory(category, btnElem) {
-  activeCategoryFilter = category;
-  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+function filterCategory(cat, btnElem) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
   if (btnElem) btnElem.classList.add('active');
-  renderImagesGallery();
+  renderGallery();
 }
 
-function renderImagesGallery() {
-  const grid = document.getElementById('galleryCardsGrid');
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
   if (!grid) return;
 
   const searchQuery = (document.getElementById('gallerySearchInput')?.value || '').toLowerCase();
 
   const filtered = allImages.filter(img => {
-    const matchCat = activeCategoryFilter === 'all' || img.category === activeCategoryFilter || img.subject.includes(activeCategoryFilter);
+    const matchCat = activeFilter === 'all' || img.category === activeFilter || img.subject.includes(activeFilter);
     const matchSearch = !searchQuery || img.filename.toLowerCase().includes(searchQuery) || img.subject.toLowerCase().includes(searchQuery) || img.caption.toLowerCase().includes(searchQuery);
     return matchCat && matchSearch;
   });
 
   if (filtered.length === 0) {
-    grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1 / -1; padding: 40px; text-align: center;">No images matching your filter.</p>';
+    grid.innerHTML = '<p style="color: var(--text-dim); grid-column: 1 / -1; padding: 40px; text-align: center;">No items match this filter.</p>';
     return;
   }
 
   grid.innerHTML = filtered.map(img => `
-    <div class="gallery-card" onclick="openImageModal('${img.id}')">
-      <div class="gallery-card-img">
+    <div class="card-image-box" onclick="openImageModal('${img.id}')">
+      <div class="card-image-media">
         <img src="/data/images/${img.filename}" alt="${img.subject}" loading="lazy">
       </div>
-      <div class="gallery-card-body">
+      <div class="card-image-body">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="gallery-card-title">${img.subject}</span>
-          <span class="cand-pill ${img.is_flagged ? 'rejected' : 'accepted'}">${img.is_flagged ? 'FLAGGED' : 'VALIDATED'}</span>
+          <span class="card-image-subject">${img.subject}</span>
+          <span class="status-badge ${img.is_flagged ? 'rejected' : 'accepted'}">${img.is_flagged ? 'FLAGGED' : 'VERIFIED'}</span>
         </div>
-        <p class="gallery-card-caption">${img.caption}</p>
-        <div style="margin-top: 10px; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">
-          Conf: ${(img.confidence * 100).toFixed(0)}% | ${img.filename}
+        <p class="card-image-desc">${img.caption}</p>
+        <div class="card-image-foot">
+          <span>Conf: ${(img.confidence * 100).toFixed(0)}%</span>
+          <span>${img.filename}</span>
         </div>
       </div>
     </div>
   `).join('');
 }
 
-// 10. Image Metadata Inspector Modal
+// 10. Modal Inspector
 function openImageModal(imageId) {
   const img = allImages.find(i => i.id === imageId);
   if (!img) return;
 
-  document.getElementById('modalImageThumb').innerHTML = `<img src="/data/images/${img.filename}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;">`;
+  document.getElementById('modalThumb').innerHTML = `<img src="/data/images/${img.filename}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px;">`;
   document.getElementById('modalSubject').innerText = img.subject.toUpperCase();
-  document.getElementById('modalDetails').innerText = JSON.stringify(img, null, 2);
+  document.getElementById('modalCode').innerText = JSON.stringify(img, null, 2);
 
-  document.getElementById('imageModal').style.display = 'flex';
+  document.getElementById('imageBackdrop').style.display = 'flex';
 }
 
 function closeImageModal() {
-  document.getElementById('imageModal').style.display = 'none';
+  document.getElementById('imageBackdrop').style.display = 'none';
 }
 
 // 11. Stretch Features
 async function runAltTextDemo() {
-  const output = document.getElementById('stretchAltTextOutput');
+  const output = document.getElementById('stretchAltOutput');
   output.innerText = 'Generating WCAG & SEO Alt-Text...';
   try {
     const res = await fetch('/api/images/fox-01.jpg/alt-text?postId=red-fox-behavior');
@@ -340,8 +326,8 @@ async function runAltTextDemo() {
 }
 
 async function runDuplicateScan() {
-  const output = document.getElementById('stretchDuplicatesOutput');
-  output.innerText = 'Scanning vector embeddings for near-duplicates (cosine >= 0.90)...';
+  const output = document.getElementById('stretchDupeOutput');
+  output.innerText = 'Scanning vector space for near-duplicates (cosine >= 0.90)...';
   try {
     const res = await fetch('/api/images-duplicates?threshold=0.90');
     const data = await res.json();
@@ -351,38 +337,30 @@ async function runDuplicateScan() {
   }
 }
 
-// 12. Evaluation Benchmark Suite
+// 12. Benchmark & Cost
 async function runEvalBenchmark() {
-  const output = document.getElementById('evalOutputJson');
-  output.innerText = 'Running Top-1 Precision benchmark across labeled ground truth...';
+  const output = document.getElementById('evalJson');
+  output.innerText = 'Running benchmark precision evaluation...';
   try {
     const res = await fetch('/api/eval');
     const data = await res.json();
-    document.getElementById('evalMetricScore').innerText = data.top1PrecisionFormatted;
-    document.getElementById('evalRejectionsScore').innerText = `${data.mismatchRejectionRatePercent}%`;
+    document.getElementById('evalScoreVal').innerText = data.top1PrecisionFormatted;
+    document.getElementById('evalRejectionVal').innerText = `${data.mismatchRejectionRatePercent}%`;
     output.innerText = JSON.stringify(data, null, 2);
   } catch (err) {
     output.innerText = `Error: ${err.message}`;
   }
 }
 
-// 13. Cost Records
 async function loadCostRecords() {
-  const output = document.getElementById('costOutputJson');
+  const output = document.getElementById('costsJson');
   try {
     const res = await fetch('/api/costs');
     const data = await res.json();
-    document.getElementById('costStatTotal').innerText = `$${data.totalCostUsd} USD`;
-    document.getElementById('costStatCalls').innerText = `${data.totalCalls} Calls`;
+    document.getElementById('costTotalVal').innerText = `$${data.totalCostUsd} USD`;
+    document.getElementById('costCallsVal').innerText = `${data.totalCalls} Calls`;
     output.innerText = JSON.stringify(data, null, 2);
   } catch (err) {
     output.innerText = `Error: ${err.message}`;
   }
-}
-
-function getCategoryEmoji(cat) {
-  if (cat === 'animal') return '🦊';
-  if (cat === 'technology') return '⚛️';
-  if (cat === 'landscape') return '🌲';
-  return '📄';
 }
