@@ -11,26 +11,18 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve Static Demo UI
+// Serve Static Frontend Bundle (SPA)
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Explicit Image Content-Type Delivery Handler (Guarantees 100% Crisp Vector/Image Rendering)
-app.get('/data/images/:filename', (req: Request, res: Response) => {
-  const filename = req.params.filename;
-  const filePath = path.join(process.cwd(), 'data/images', filename);
-  
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Image Not Found');
+// Serve Real Binary Images with clean standard MIME headers
+app.use('/data/images', express.static(path.join(process.cwd(), 'data/images'), {
+  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    }
   }
-
-  const content = fs.readFileSync(filePath, 'utf-8');
-  if (content.trim().startsWith('<svg')) {
-    res.setHeader('Content-Type', 'image/svg+xml');
-  } else {
-    res.setHeader('Content-Type', 'image/jpeg');
-  }
-  res.send(content);
-});
+}));
 
 // Initialize Database connection on boot
 getDatabase();
