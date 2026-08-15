@@ -1,11 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    color-scheme: dark;
+    background-color: #08090a;
+    color: #f9fafb;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-background text-ink;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: #08090a;
+    color: #f9fafb;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -15,12 +28,31 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090d0f;
+  background: #08090a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #202a2f;
+  background: #1b1f27;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2c3a42;
+  background: #282f3c;
+}
+
+/* Subtle Glass / Depth Surfaces */
+.surface-subtle {
+  background: rgba(15, 17, 21, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.surface-card {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.surface-card-hover:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
