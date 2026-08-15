@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#2d3748"/><text x="50%" y="50%" fill="#ffffff" font-size="20" text-anchor="middle">red fox (fox-extra-04.jpg)</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-foxextra04jpg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#431407"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" rx="12" fill="url(#bg-foxextra04jpg)"/>
+  <rect x="0" y="0" width="400" height="240" rx="12" fill="none" stroke="#ea580c" stroke-opacity="0.25" stroke-width="2"/>
+  
+  <g transform="translate(0, 0)">
+    <circle cx="200" cy="110" r="45" fill="#f97316"/>
+               <polygon points="170,75 160,35 190,65" fill="#ea580c"/>
+               <polygon points="230,75 240,35 210,65" fill="#ea580c"/>
+               <polygon points="200,105 190,120 210,120" fill="#ffffff"/>
+               <circle cx="185" cy="100" r="5" fill="#1e293b"/>
+               <circle cx="215" cy="100" r="5" fill="#1e293b"/>
+  </g>
+  
+  <rect x="20" y="180" width="360" height="42" rx="8" fill="#090d16" fill-opacity="0.8" stroke="#334155" stroke-width="1"/>
+  <text x="35" y="200" fill="#ffffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">RED FOX</text>
+  <text x="35" y="214" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="10">fox-extra-04.jpg</text>
+  
+  <rect x="250" y="190" width="120" height="22" rx="4" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-width="1"/>
+  <text x="310" y="205" fill="#10b981" font-family="sans-serif" font-size="8.5" font-weight="bold" text-anchor="middle">VERIFIED</text>
+</svg>

@@ -36,7 +36,7 @@ class PureDatabase {
     }
   }
 
-  private createEmptyStore(): DatabaseStore {
+  createEmptyStore(): DatabaseStore {
     return {
       images: {},
       embeddings: {},
@@ -46,6 +46,11 @@ class PureDatabase {
       cost_logs: {},
       batch_jobs: {}
     };
+  }
+
+  reset() {
+    this.data = this.createEmptyStore();
+    this.save();
   }
 
   private save() {
@@ -159,19 +164,16 @@ class PureDatabase {
       collection = Object.values(this.data.suggestions);
     }
 
-    // Apply is_flagged filter if specified
     if (lowerSql.includes('is_flagged = 0')) {
       collection = collection.filter((item: any) => item.is_flagged === 0);
     } else if (lowerSql.includes('is_flagged = 1')) {
       collection = collection.filter((item: any) => item.is_flagged === 1);
     }
 
-    // Filter expected_subject != ''
     if (lowerSql.includes('expected_subject != \'\'')) {
       collection = collection.filter((item: any) => item.expected_subject && item.expected_subject.trim() !== '');
     }
 
-    // Embeddings Query Handler: target_type = 'image' AND target_id = ?
     if (lowerSql.includes('from embeddings')) {
       if (lowerSql.includes("target_type = 'image'") && lowerSql.includes('target_id = ?')) {
         const targetId = args[0];
@@ -184,12 +186,10 @@ class PureDatabase {
         collection = collection.filter((item: any) => item.target_type === ttype && item.target_id === tid);
       }
     }
-    // Posts Query Handler: id = ? OR slug = ?
     else if (lowerSql.includes('from posts') && args.length > 0) {
       const val = args[0];
       collection = collection.filter((item: any) => item.id === val || item.slug === val);
     }
-    // Images Query Handler: id = ? OR filename = ?
     else if (lowerSql.includes('from images')) {
       const literalSubjectMatch = sql.match(/subject\s*=\s*'([^']+)'/i);
       if (literalSubjectMatch) {
