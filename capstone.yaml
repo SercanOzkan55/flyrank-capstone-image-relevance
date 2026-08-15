@@ -1,0 +1,32 @@
+version: "1.0"
+name: "flyrank-capstone-image-relevance"
+run: "npm run start"
+seed: "npm run seed"
+test: "npm test"
+eval: "npm run eval"
+base_url: "http://localhost:3000"
+
+probes:
+  probe_1_ingest_batch:
+    endpoint: "POST /api/jobs/ingest"
+    description: "Triggers background vision classification batch job on image corpus"
+  probe_2_query_fox_post:
+    endpoint: "GET /api/posts/red-fox-behavior/images"
+    description: "Queries image matches for red fox post, returns ranked candidates"
+  probe_3_force_wolf_mismatch:
+    endpoint: "POST /api/posts/red-fox-behavior/force-match"
+    payload: { candidateImageId: "wolf-01" }
+    description: "Forces wolf candidate against fox post; expects Mismatch Guard REJECTED"
+  probe_4_no_confident_match:
+    endpoint: "GET /api/posts/quantum-computing-intro/images"
+    description: "Queries post with no relevant image; expects 'no confident match'"
+  probe_5_top1_eval:
+    command: "npm run eval"
+    description: "Runs Top-1 precision evaluator on labeled dataset"
+  probe_6_cost_tracking:
+    endpoint: "GET /api/costs"
+    description: "Returns per-call vision and embedding cost tracking logs"
+
+review_endpoints:
+  reviews: "POST /api/reviews"
+  batch_jobs: "GET /api/jobs"

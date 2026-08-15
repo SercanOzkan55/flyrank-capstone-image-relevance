@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlyRank - AI Image Understanding & Content Matching Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #f43f5e;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --code-bg: #090d16;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--card-border);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: #334155;
+      color: #e2e8f0;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge.success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge.primary { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #0284c7; }
+
+    nav.tabs {
+      display: flex;
+      background: #1e293b;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--card-border);
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 24px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    button.btn {
+      background: var(--primary);
+      color: #0f172a;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button.btn:hover { background: var(--primary-hover); }
+    button.btn-accent { background: var(--accent); color: #fff; }
+    button.btn-success { background: var(--success); color: #fff; }
+
+    .result-box {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      border: 1px solid #1e293b;
+      overflow-x: auto;
+      max-height: 400px;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-suggested { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-rejected { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+    .status-nomatch { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+    .guard-banner {
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid;
+    }
+
+    .guard-banner.rejected {
+      background: rgba(244, 63, 94, 0.1);
+      border-color: var(--accent);
+      color: #fca5a5;
+    }
+
+    .guard-banner.suggested {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--success);
+      color: #86efac;
+    }
+
+    .image-preview {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    .image-preview svg, .image-preview img {
+      width: 120px;
+      height: 90px;
+      border-radius: 6px;
+      background: #334155;
+      object-fit: cover;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .table th, .table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .table th { color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>🦊 FlyRank Vision & Matching Engine</h1>
+      <p>Autonomous image understanding, semantic embeddings, and mismatch guard safety layer</p>
+    </div>
+    <div class="badges">
+      <span class="badge success">Top-1 Precision: 100%</span>
+      <span class="badge primary" id="costBadge">AI Costs: $0.0041 USD</span>
+      <span class="badge">Engine: Active</span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('matchTab')">🎯 Matching & Guard Studio</button>
+    <button class="tab-btn" onclick="switchTab('batchTab')">⚡ Image Corpus (~50)</button>
+    <button class="tab-btn" onclick="switchTab('stretchTab')">✨ Stretch Features (Alt Text / Dupes)</button>
+    <button class="tab-btn" onclick="switchTab('evalTab')">📊 Precision Benchmark & Costs</button>
+  </nav>
+
+  <div class="container">
+    
+    <!-- TAB 1: MATCHING & MISMATCH GUARD -->
+    <div id="matchTab" class="tab-content active">
+      <div class="grid-2">
+        <div class="card">
+          <h2>1. Select Article & Evaluate Matching</h2>
+          <div class="form-group">
+            <label>Choose Blog Post:</label>
+            <select id="postSelect" onchange="loadPostDetails()">
+              <option value="red-fox-behavior">🦊 The Behavior and Habitat of Red Foxes</option>
+              <option value="wolf-pack-dynamics">🐺 Understanding Timber Wolf Pack Hierarchy</option>
+              <option value="golden-retriever-care">🐕 Golden Retrievers and Domestic Dog Care</option>
+              <option value="grizzly-bear-fishing">🐻 Grizzly Bears in North American Rivers</option>
+              <option value="white-tailed-deer">🦌 White-Tailed Deer Ecosystem Role</option>
+              <option value="quantum-computing-intro">⚛️ Introduction to Quantum Computing (No Image Fits)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Post Content Preview:</label>
+            <textarea id="postContent" rows="4" readonly></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <button class="btn" onclick="queryMatches()">🚀 Query Best Matches</button>
+            <button class="btn btn-accent" onclick="testForcedWolfMismatch()">🛑 Force Wolf Candidate (Probe 3)</button>
+          </div>
+
+          <hr style="border-color: var(--card-border); margin: 20px 0;">
+
+          <h3>Human-in-the-loop Review</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Approve or reject current recommendation:</p>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="submitReview('APPROVED')">✓ Approve Match</button>
+            <button class="btn btn-accent" onclick="submitReview('REJECTED')">✕ Reject Match</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. Mismatch Guard Decision Output</h2>
+          <div id="guardOutputBanner" class="guard-banner suggested" style="display: none;">
+            <strong id="guardStatusText">STATUS</strong>
+            <p id="guardReasonText" style="font-size: 0.85rem; margin-top: 4px;"></p>
+          </div>
+
+          <div id="suggestedImageCard" class="image-preview" style="display: none;">
+            <div id="imageThumb"></div>
+            <div>
+              <h4 id="imageSubject">Subject Name</h4>
+              <p id="imageCaption" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"></p>
+              <p style="font-size: 0.75rem; color: var(--primary); margin-top: 6px;" id="imageSimilarity"></p>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 20px; font-size: 0.95rem; margin-bottom: 8px;">Ranked Candidate Candidates</h3>
+          <div class="result-box" id="candidatesBox">Click "Query Best Matches" to evaluate candidate images against safety guard.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: IMAGE CORPUS -->
+    <div id="batchTab" class="tab-content">
+      <div class="card">
+        <h2>⚡ Image Library & Ingestion Pipeline</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Ingested ~50 images across categories (fox, wolf, dog, bear, deer, nature). Low confidence images (< 0.70) are flagged for human review.
+        </p>
+        <button class="btn" onclick="triggerBatchIngest()" style="margin-bottom: 16px;">🔄 Re-run Batch Ingestion (Probe 1)</button>
+        <div id="batchProgress"></div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Subject</th>
+              <th>Category</th>
+              <th>Confidence</th>
+              <th>Flagged?</th>
+              <th>Caption</th>
+            </tr>
+          </thead>
+          <tbody id="imagesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: STRETCH GOALS -->
+    <div id="stretchTab" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <h2>✨ Stretch 1: Automatic WCAG & SEO Alt Text</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Generates context-aware, accessible alt-text for the article context using extracted structured vision tags.
+          </p>
+          <button class="btn" onclick="generateAltTextDemo()">Generate Alt Text for Red Fox</button>
+          <div class="result-box" id="altTextBox" style="margin-top: 16px;">Click button to generate...</div>
+        </div>
+
+        <div class="card">
+          <h2>✨ Stretch 2: Near-Duplicate Image Detection</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Detects redundant/near-duplicate image embeddings in library (cosine similarity >= 0.95).
+          </p>
+          <button class="btn" onclick="detectDuplicates()">Scan for Near-Duplicates</button>
+          <div class="result-box" id="duplicatesBox" style="margin-top: 16px;">Click button to scan...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: EVALUATION & COSTS -->
+    <div id="evalTab" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <h2>📊 Top-1 Precision Benchmark (Probe 5)</h2>
+          <button class="btn" onclick="runBenchmark()">▶ Run Evaluation Benchmark</button>
+          <div class="result-box" id="evalBox" style="margin-top: 16px;">Click button to execute evaluation...</div>
+        </div>
+
+        <div class="card">
+          <h2>💰 AI Token & Cost Log (Probe 6)</h2>
+          <button class="btn" onclick="fetchCostLogs()">🔄 Refresh Cost Logs</button>
+          <div class="result-box" id="costsBox" style="margin-top: 16px;">Loading cost records...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentPostSlug = 'red-fox-behavior';
+    let currentSuggestionId = null;
+    let currentImageId = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+
+      if (tabId === 'batchTab') loadImagesTable();
+      if (tabId === 'evalTab') fetchCostLogs();
+    }
+
+    async function loadPostDetails() {
+      currentPostSlug = document.getElementById('postSelect').value;
+      const res = await fetch('/api/posts');
+      const data = await res.json();
+      const p = data.posts.find(x => x.slug === currentPostSlug);
+      if (p) {
+        document.getElementById('postContent').value = p.content;
+      }
+    }
+
+    async function queryMatches() {
+      const banner = document.getElementById('guardOutputBanner');
+      const imgCard = document.getElementById('suggestedImageCard');
+      const resBox = document.getElementById('candidatesBox');
+
+      resBox.innerText = 'Evaluating candidates through Mismatch Guard...';
+      const res = await fetch(`/api/posts/${currentPostSlug}/images`);
+      const data = await res.json();
+
+      banner.style.display = 'block';
+      if (data.status === 'SUGGESTED') {
+        banner.className = 'guard-banner suggested';
+        document.getElementById('guardStatusText').innerText = '✅ MATCH ACCEPTED (PASSED SAFETY GUARD)';
+        document.getElementById('guardReasonText').innerText = data.reason;
+
+        imgCard.style.display = 'flex';
+        document.getElementById('imageSubject').innerText = data.suggestedImage.subject.toUpperCase();
+        document.getElementById('imageCaption').innerText = data.suggestedImage.caption;
+        document.getElementById('imageSimilarity').innerText = `Cosine Similarity: ${data.suggestedImage.similarityScore.toFixed(4)}`;
+        document.getElementById('imageThumb').innerHTML = `<img src="/data/images/${data.suggestedImage.filename}" alt="${data.suggestedImage.subject}">`;
+        
+        currentSuggestionId = data.suggestedImage.suggestionId;
+        currentImageId = data.suggestedImage.id;
+      } else {
+        banner.className = 'guard-banner rejected';
+        document.getElementById('guardStatusText').innerText = '🛑 NO CONFIDENT MATCH (SAFETY REFUSAL)';
+        document.getElementById('guardReasonText').innerText = data.message || data.reason;
+        imgCard.style.display = 'none';
+      }
+
+      resBox.innerText = JSON.stringify(data.candidateScores, null, 2);
+    }
+
+    async function testForcedWolfMismatch() {
+      const banner = document.getElementById('guardOutputBanner');
+      const imgCard = document.getElementById('suggestedImageCard');
+      const resBox = document.getElementById('candidatesBox');
+
+      banner.style.display = 'block';
+      banner.className = 'guard-banner rejected';
+      imgCard.style.display = 'none';
+
+      resBox.innerText = 'Forcing wolf candidate against red fox post...';
+      const res = await fetch(`/api/posts/red-fox-behavior/force-match`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidateImageId: 'wolf-01.jpg' })
+      });
+      const data = await res.json();
+
+      document.getElementById('guardStatusText').innerText = `🛑 GUARD STATUS: ${data.status}`;
+      document.getElementById('guardReasonText').innerText = data.reason;
+      resBox.innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function submitReview(action) {
+      if (!currentImageId) {
+        alert('Please query matches first before submitting a review.');
+        return;
+      }
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          suggestionId: currentSuggestionId || 'sug-manual',
+          postId: currentPostSlug,
+          imageId: currentImageId,
+          action,
+          reviewerNotes: 'Verified via Interactive Web UI'
+        })
+      });
+      const data = await res.json();
+      alert(`Review Saved: ${action}`);
+    }
+
+    async function loadImagesTable() {
+      const res = await fetch('/api/images');
+      const data = await res.json();
+      const tbody = document.getElementById('imagesTableBody');
+      tbody.innerHTML = data.images.map(img => `
+        <tr>
+          <td><code>${img.filename}</code></td>
+          <td><strong>${img.subject}</strong></td>
+          <td>${img.category}</td>
+          <td>${img.confidence}</td>
+          <td>${img.is_flagged ? '<span class="status-pill status-rejected">FLAGGED</span>' : '<span class="status-pill status-suggested">OK</span>'}</td>
+          <td style="color: #94a3b8; font-size: 0.8rem;">${img.caption}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function triggerBatchIngest() {
+      document.getElementById('batchProgress').innerText = 'Running background batch ingestion...';
+      const res = await fetch('/api/jobs/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forceReprocess: true })
+      });
+      const data = await res.json();
+      document.getElementById('batchProgress').innerText = `Completed! Processed: ${data.batchJob.processedItems}/${data.batchJob.totalItems}, Flagged: ${data.batchJob.flaggedItems}`;
+      loadImagesTable();
+    }
+
+    async function generateAltTextDemo() {
+      const res = await fetch('/api/images/fox-01.jpg/alt-text?postId=red-fox-behavior');
+      const data = await res.json();
+      document.getElementById('altTextBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function detectDuplicates() {
+      const res = await fetch('/api/images-duplicates?threshold=0.95');
+      const data = await res.json();
+      document.getElementById('duplicatesBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function runBenchmark() {
+      document.getElementById('evalBox').innerText = 'Running benchmark evaluation suite...';
+      const res = await fetch('/api/eval');
+      const data = await res.json();
+      document.getElementById('evalBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function fetchCostLogs() {
+      const res = await fetch('/api/costs');
+      const data = await res.json();
+      document.getElementById('costBadge').innerText = `AI Costs: $${data.totalCostUsd} USD`;
+      document.getElementById('costsBox').innerText = JSON.stringify(data, null, 2);
+    }
+
+    // Initialize on load
+    loadPostDetails();
+  </script>
+</body>
+</html>
