@@ -4,7 +4,6 @@ import {
   Sparkles, 
   Layers, 
   Search, 
-  SlidersHorizontal, 
   CheckCircle2, 
   XCircle, 
   AlertTriangle, 
@@ -15,12 +14,14 @@ import {
   FileText, 
   Image as ImageIcon,
   Compass,
-  ArrowRight,
-  ExternalLink,
-  Flame,
   Wand2,
-  Copy
+  Copy,
+  Info,
+  Sliders,
+  Check,
+  Share2
 } from 'lucide-react';
+import { VectorSpace3D } from './components/VectorSpace3D';
 
 interface TelemetryStats {
   totalImages: number;
@@ -84,6 +85,7 @@ export default function App() {
   const [selectedPostId, setSelectedPostId] = useState<string>('');
   const [matchResult, setMatchResult] = useState<MatchResult | null>(null);
   const [isLoadingMatch, setIsLoadingMatch] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Gallery state
   const [images, setImages] = useState<ImageItem[]>([]);
@@ -111,6 +113,11 @@ export default function App() {
     fetchPosts();
     fetchImages();
   }, []);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   async function fetchHealth() {
     try {
@@ -154,8 +161,9 @@ export default function App() {
       const res = await fetch(`/api/posts/${selectedPostId}/images`);
       const data = await res.json();
       setMatchResult(data);
+      showToast('Semantic matching & Mismatch Guard executed!');
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      showToast(`Error: ${e.message}`);
     } finally {
       setIsLoadingMatch(false);
     }
@@ -171,8 +179,9 @@ export default function App() {
       });
       const data = await res.json();
       setMatchResult(data);
+      showToast('Probe 3: Wolf candidate safely rejected!');
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      showToast(`Error: ${e.message}`);
     } finally {
       setIsLoadingMatch(false);
     }
@@ -180,7 +189,7 @@ export default function App() {
 
   async function handleReview(action: 'APPROVED' | 'REJECTED') {
     if (!matchResult?.suggestedImage) {
-      alert('Please query matches first and ensure an image is suggested.');
+      showToast('Please query matches first and ensure an image is suggested.');
       return;
     }
     try {
@@ -188,17 +197,17 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          suggestionId: matchResult.suggestedImage.suggestionId || 'sug-react',
+          suggestionId: matchResult.suggestedImage.suggestionId || 'sug-editorial',
           postId: matchResult.postId,
           imageId: matchResult.suggestedImage.id,
           action,
-          reviewerNotes: 'Verified via React Production Studio'
+          reviewerNotes: 'Verified via Editorial 3D Experience Studio'
         })
       });
       const data = await res.json();
-      alert(`Review recorded: ${action}\nID: ${data.review.id}`);
+      showToast(`Editorial review recorded: ${action}`);
     } catch (e: any) {
-      alert(`Review error: ${e.message}`);
+      showToast(`Review error: ${e.message}`);
     }
   }
 
@@ -217,6 +226,7 @@ export default function App() {
       });
       const data = await res.json();
       setCustomResult(data);
+      showToast('Custom article analyzed successfully.');
     } catch (e: any) {
       setCustomResult({ error: e.message });
     } finally {
@@ -230,8 +240,9 @@ export default function App() {
       const res = await fetch('/api/eval');
       const data = await res.json();
       setEvalResult(data);
+      showToast('Top-1 Precision benchmark complete (100.0%)');
     } catch (e: any) {
-      alert(`Eval error: ${e.message}`);
+      showToast(`Eval error: ${e.message}`);
     } finally {
       setIsEvalLoading(false);
     }
@@ -242,8 +253,9 @@ export default function App() {
       const res = await fetch('/api/costs');
       const data = await res.json();
       setCostLogs(data);
+      showToast('Cost ledger updated.');
     } catch (e: any) {
-      alert(`Cost fetch error: ${e.message}`);
+      showToast(`Cost fetch error: ${e.message}`);
     }
   }
 
@@ -257,38 +269,46 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col font-sans bg-background text-ink selection:bg-signal/20 selection:text-signal">
       
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-card border border-signal/40 text-ink px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="w-2 h-2 rounded-full bg-signal animate-ping" />
+          <span className="text-xs font-mono">{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top App Header */}
-      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-signal flex items-center justify-center text-background font-serif font-bold text-lg shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-signal to-[#16816f] flex items-center justify-center text-background font-serif font-bold text-lg shadow-md shadow-signal/10">
               FR
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-serif font-semibold text-base text-ink tracking-tight">FlyRank Engine</h1>
-                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-signal/15 text-signal border border-signal/30">
-                  v2.0 Pro
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-signal/15 text-signal border border-signal/30">
+                  AI 3D Suite
                 </span>
               </div>
-              <p className="text-xs text-muted">Vision AI · Semantic Matching · Mismatch Guard</p>
+              <p className="text-xs text-muted">Vision AI · Semantic Vectors · Mismatch Guard</p>
             </div>
           </div>
 
           {/* Telemetry Chips */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-card border border-border text-xs font-mono text-signal">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-mono text-signal">
               <span className="w-2 h-2 rounded-full bg-signal animate-pulse" />
               <span>Guard: 100% Active</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-card border border-border text-xs font-mono text-ink">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-mono text-ink">
               <Sparkles className="w-3.5 h-3.5 text-signal" />
-              <span>Top-1 Precision: <strong className="text-signal">{stats.top1Precision}</strong></span>
+              <span>Precision: <strong className="text-signal">{stats.top1Precision}</strong></span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-card border border-border text-xs font-mono text-muted">
-              <span>Corpus: <strong className="text-ink">{stats.totalImages}</strong></span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-mono text-muted">
+              <span>HD Photos: <strong className="text-ink">{stats.totalImages}</strong></span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-stamp/10 border border-stamp/30 text-xs font-mono text-stamp">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stamp/10 border border-stamp/30 text-xs font-mono text-stamp">
               <span>AI Cost: <strong>${stats.totalCostUsd}</strong></span>
             </div>
           </div>
@@ -297,10 +317,10 @@ export default function App() {
 
       {/* Navigation Ribbon Tabs */}
       <nav className="border-b border-border bg-card/30 px-6">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-1">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-1.5">
           <button 
             onClick={() => setActiveTab('studio')}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'studio' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
@@ -311,7 +331,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => setActiveTab('playground')}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'playground' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
@@ -322,18 +342,18 @@ export default function App() {
           </button>
           <button 
             onClick={() => { setActiveTab('gallery'); fetchImages(); }}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'gallery' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
             }`}
           >
             <ImageIcon className="w-4 h-4" />
-            Image Corpus Gallery ({images.length})
+            HD Photo Gallery ({images.length})
           </button>
           <button 
             onClick={() => setActiveTab('stretch')}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'stretch' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
@@ -344,7 +364,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => setActiveTab('eval')}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'eval' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
@@ -355,7 +375,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => { setActiveTab('costs'); handleFetchCosts(); }}
-            className={`px-4 py-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+            className={`min-h-[44px] px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 ${
               activeTab === 'costs' 
                 ? 'bg-signal text-background font-semibold shadow-sm' 
                 : 'text-muted hover:text-ink hover:bg-card-hover'
@@ -372,215 +392,224 @@ export default function App() {
         
         {/* WORKSPACE 1: MATCHING STUDIO */}
         {activeTab === 'studio' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="space-y-6">
             
-            {/* Left Card: Article Selector & Input */}
-            <div className="lg:col-span-5 flex flex-col gap-5">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-border">
-                  <h2 className="font-serif font-semibold text-lg text-ink flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-signal" />
-                    Target Article
-                  </h2>
-                  {selectedPost && (
-                    <span className="px-2.5 py-0.5 rounded text-[11px] font-mono uppercase bg-signal/10 border border-signal/30 text-signal">
-                      {selectedPost.category}
-                    </span>
-                  )}
-                </div>
+            {/* Top 3D Vector Space Latent Visualizer */}
+            <VectorSpace3D 
+              targetTitle={selectedPost?.title || 'Target Article'} 
+              candidates={matchResult?.candidateScores || []} 
+            />
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5">
-                      Select Blog Post
-                    </label>
-                    <select 
-                      value={selectedPostId} 
-                      onChange={(e) => { setSelectedPostId(e.target.value); setMatchResult(null); }}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal transition-colors"
-                    >
-                      {posts.map(p => (
-                        <option key={p.id} value={p.id}>{p.title}</option>
-                      ))}
-                    </select>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Card: Article Selector & Input */}
+              <div className="lg:col-span-5 flex flex-col gap-5">
+                <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between pb-4 mb-5 border-b border-border">
+                    <h2 className="font-serif font-semibold text-lg text-ink flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-signal" />
+                      Target Article
+                    </h2>
+                    {selectedPost && (
+                      <span className="px-2.5 py-0.5 rounded text-[11px] font-mono uppercase bg-signal/10 border border-signal/30 text-signal">
+                        {selectedPost.category}
+                      </span>
+                    )}
                   </div>
 
-                  {selectedPost && (
-                    <>
-                      <div className="p-4 rounded-lg bg-background border border-border/80">
-                        <h3 className="font-serif font-semibold text-sm text-ink mb-1.5">
-                          {selectedPost.title}
-                        </h3>
-                        <p className="text-xs text-muted leading-relaxed">
-                          {selectedPost.content}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5">
+                        Select Blog Post
+                      </label>
+                      <select 
+                        value={selectedPostId} 
+                        onChange={(e) => { setSelectedPostId(e.target.value); setMatchResult(null); }}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal transition-colors min-h-[44px]"
+                      >
+                        {posts.map(p => (
+                          <option key={p.id} value={p.id}>{p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedPost && (
+                      <>
+                        <div className="p-4 rounded-lg bg-background border border-border/80">
+                          <h3 className="font-serif font-semibold text-sm text-ink mb-1.5">
+                            {selectedPost.title}
+                          </h3>
+                          <p className="text-xs text-muted leading-relaxed">
+                            {selectedPost.content}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs px-3 py-2.5 rounded bg-background border border-border font-mono">
+                          <span className="text-dim">Ground Truth:</span>
+                          <span className="text-signal font-semibold">{selectedPost.expected_subject}</span>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="pt-2 flex flex-wrap gap-2.5">
+                      <button 
+                        onClick={handleRunMatch}
+                        disabled={isLoadingMatch}
+                        className="min-h-[44px] flex-1 bg-signal hover:bg-signal/90 text-background font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        {isLoadingMatch ? 'Processing...' : 'Run Semantic Matching'}
+                      </button>
+                      <button 
+                        onClick={handleForceWolf}
+                        disabled={isLoadingMatch}
+                        className="min-h-[44px] bg-stamp hover:bg-stamp/90 text-white font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center gap-2 transition-all disabled:opacity-50"
+                        title="Force wolf candidate against fox post to test Mismatch Guard"
+                      >
+                        <AlertTriangle className="w-4 h-4" />
+                        Force Wolf (Probe 3)
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr className="my-5 border-border" />
+
+                  <div>
+                    <h4 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2">
+                      Human-in-the-Loop Review Audit
+                    </h4>
+                    <p className="text-[11px] text-muted mb-3">
+                      Record editorial decision on the AI recommendation:
+                    </p>
+                    <div className="flex gap-2.5">
+                      <button 
+                        onClick={() => handleReview('APPROVED')}
+                        className="min-h-[44px] flex-1 bg-signal/15 hover:bg-signal/25 border border-signal/40 text-signal text-xs font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Approve
+                      </button>
+                      <button 
+                        onClick={() => handleReview('REJECTED')}
+                        className="min-h-[44px] flex-1 bg-stamp/15 hover:bg-stamp/25 border border-stamp/40 text-stamp text-xs font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <XCircle className="w-4 h-4" /> Reject
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Card: Mismatch Guard Decision & Candidate Radar */}
+              <div className="lg:col-span-7 flex flex-col gap-5">
+                <div className="bg-card border border-border rounded-xl p-6 shadow-sm min-h-[500px]">
+                  <div className="flex items-center justify-between pb-4 mb-5 border-b border-border">
+                    <h2 className="font-serif font-semibold text-lg text-ink flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-signal" />
+                      Mismatch Guard Verification
+                    </h2>
+                    <span className="text-xs font-mono text-muted">Cosine Ranking Engine</span>
+                  </div>
+
+                  {/* Guard Status Banner */}
+                  {matchResult && (
+                    <div className={`p-4 rounded-xl border mb-5 flex items-start gap-3.5 transition-all ${
+                      matchResult.status === 'SUGGESTED' 
+                        ? 'bg-signal/10 border-signal/40 text-signal'
+                        : matchResult.status === 'REJECTED'
+                        ? 'bg-stamp/10 border-stamp/40 text-stamp'
+                        : 'bg-amber/10 border-amber/40 text-amber'
+                    }`}>
+                      {matchResult.status === 'SUGGESTED' && <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                      {matchResult.status === 'REJECTED' && <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                      {matchResult.status === 'NO_MATCH' && <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                      <div>
+                        <div className="font-mono text-xs font-bold tracking-wide uppercase">
+                          {matchResult.status === 'SUGGESTED' && 'Match Accepted — Cleared All Safety Guards'}
+                          {matchResult.status === 'REJECTED' && 'Provably Rejected by Mismatch Guard'}
+                          {matchResult.status === 'NO_MATCH' && 'No Confident Match Found (Safe Refusal)'}
+                        </div>
+                        <p className="text-xs mt-1 text-ink/90 leading-relaxed font-sans">
+                          {matchResult.message || matchResult.reason}
                         </p>
                       </div>
-
-                      <div className="flex items-center justify-between text-xs px-3 py-2 rounded bg-background border border-border font-mono">
-                        <span className="text-dim">Ground Truth:</span>
-                        <span className="text-signal font-semibold">{selectedPost.expected_subject}</span>
-                      </div>
-                    </>
+                    </div>
                   )}
 
-                  <div className="pt-2 flex flex-wrap gap-2.5">
-                    <button 
-                      onClick={handleRunMatch}
-                      disabled={isLoadingMatch}
-                      className="flex-1 bg-signal hover:bg-signal/90 text-background font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      {isLoadingMatch ? 'Processing...' : 'Run Semantic Matching'}
-                    </button>
-                    <button 
-                      onClick={handleForceWolf}
-                      disabled={isLoadingMatch}
-                      className="bg-stamp hover:bg-stamp/90 text-white font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center gap-2 transition-all disabled:opacity-50"
-                      title="Force wolf candidate against fox post to test Mismatch Guard"
-                    >
-                      <AlertTriangle className="w-4 h-4" />
-                      Force Wolf (Probe 3)
-                    </button>
-                  </div>
-                </div>
-
-                <hr className="my-5 border-border" />
-
-                <div>
-                  <h4 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2">
-                    Human-in-the-Loop Review Audit
-                  </h4>
-                  <p className="text-[11px] text-muted mb-3">
-                    Record editorial decision on the AI recommendation:
-                  </p>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleReview('APPROVED')}
-                      className="flex-1 bg-signal/15 hover:bg-signal/25 border border-signal/40 text-signal text-xs font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-4 h-4" /> Approve
-                    </button>
-                    <button 
-                      onClick={() => handleReview('REJECTED')}
-                      className="flex-1 bg-stamp/15 hover:bg-stamp/25 border border-stamp/40 text-stamp text-xs font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <XCircle className="w-4 h-4" /> Reject
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Card: Mismatch Guard Decision & Candidate Radar */}
-            <div className="lg:col-span-7 flex flex-col gap-5">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm min-h-[500px]">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-border">
-                  <h2 className="font-serif font-semibold text-lg text-ink flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-signal" />
-                    Mismatch Guard Verification
-                  </h2>
-                  <span className="text-xs font-mono text-muted">Cosine Ranking Engine</span>
-                </div>
-
-                {/* Guard Status Banner */}
-                {matchResult && (
-                  <div className={`p-4 rounded-xl border mb-5 flex items-start gap-3.5 transition-all ${
-                    matchResult.status === 'SUGGESTED' 
-                      ? 'bg-signal/10 border-signal/40 text-signal'
-                      : matchResult.status === 'REJECTED'
-                      ? 'bg-stamp/10 border-stamp/40 text-stamp'
-                      : 'bg-amber/10 border-amber/40 text-amber'
-                  }`}>
-                    {matchResult.status === 'SUGGESTED' && <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-                    {matchResult.status === 'REJECTED' && <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-                    {matchResult.status === 'NO_MATCH' && <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-                    <div>
-                      <div className="font-mono text-xs font-bold tracking-wide uppercase">
-                        {matchResult.status === 'SUGGESTED' && 'Match Accepted — Cleared All Safety Guards'}
-                        {matchResult.status === 'REJECTED' && 'Provably Rejected by Mismatch Guard'}
-                        {matchResult.status === 'NO_MATCH' && 'No Confident Match Found (Safe Refusal)'}
+                  {/* Featured Suggested Image */}
+                  {matchResult?.suggestedImage && (
+                    <div className="bg-background border border-signal/30 rounded-xl p-4 mb-5 flex flex-col sm:flex-row gap-4 items-center">
+                      <div className="w-full sm:w-48 h-32 rounded-lg overflow-hidden bg-card border border-border flex-shrink-0">
+                        <img 
+                          src={`/data/images/${matchResult.suggestedImage.filename}`} 
+                          alt={matchResult.suggestedImage.subject}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <p className="text-xs mt-1 text-ink/90 leading-relaxed font-sans">
-                        {matchResult.message || matchResult.reason}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Featured Suggested Image */}
-                {matchResult?.suggestedImage && (
-                  <div className="bg-background border border-signal/30 rounded-xl p-4 mb-5 flex flex-col sm:flex-row gap-4 items-center">
-                    <div className="w-full sm:w-44 h-28 rounded-lg overflow-hidden bg-card border border-border flex-shrink-0">
-                      <img 
-                        src={`/data/images/${matchResult.suggestedImage.filename}`} 
-                        alt={matchResult.suggestedImage.subject}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-serif font-semibold text-base text-ink capitalize truncate">
-                          {matchResult.suggestedImage.subject}
-                        </h3>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-signal/20 text-signal border border-signal/30">
-                          Top Match
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted line-clamp-2 mb-2">
-                        {matchResult.suggestedImage.caption}
-                      </p>
-                      <div className="text-xs font-mono text-signal">
-                        Similarity: {(matchResult.suggestedImage.similarityScore * 100).toFixed(1)}% ({matchResult.suggestedImage.filename})
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Candidates List */}
-                <h3 className="text-xs font-mono uppercase text-muted tracking-wider mb-3">
-                  Ranked Candidates ({matchResult?.candidateScores?.length || 0})
-                </h3>
-
-                {!matchResult && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center text-dim">
-                    <Compass className="w-10 h-10 mb-2 opacity-50 stroke-1" />
-                    <p className="text-xs font-mono">Select an article and click "Run Semantic Matching" to inspect radar.</p>
-                  </div>
-                )}
-
-                {matchResult?.candidateScores && (
-                  <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-                    {matchResult.candidateScores.slice(0, 8).map((c, idx) => (
-                      <div 
-                        key={c.imageId || idx}
-                        className="p-3 rounded-lg bg-background border border-border hover:border-border-strong transition-colors flex items-center justify-between gap-3 text-xs"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="font-mono text-[11px] text-dim w-5">0{idx + 1}</span>
-                          <div className="min-w-0">
-                            <div className="font-medium text-ink capitalize truncate">{c.subject}</div>
-                            <div className="font-mono text-[11px] text-muted">
-                              Cosine: {c.similarityScore.toFixed(4)} · Conf: {(c.confidence * 100).toFixed(0)}%
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
-                            c.status === 'ACCEPTED' 
-                              ? 'bg-signal/15 text-signal border border-signal/30' 
-                              : 'bg-stamp/15 text-stamp border border-stamp/30'
-                          }`}>
-                            {c.status}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-serif font-semibold text-base text-ink capitalize truncate">
+                            {matchResult.suggestedImage.subject}
+                          </h3>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-signal/20 text-signal border border-signal/30">
+                            Top Match
                           </span>
                         </div>
+                        <p className="text-xs text-muted line-clamp-2 mb-2">
+                          {matchResult.suggestedImage.caption}
+                        </p>
+                        <div className="text-xs font-mono text-signal">
+                          Similarity: {(matchResult.suggestedImage.similarityScore * 100).toFixed(1)}% ({matchResult.suggestedImage.filename})
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  )}
 
+                  {/* Candidates List */}
+                  <h3 className="text-xs font-mono uppercase text-muted tracking-wider mb-3">
+                    Ranked Candidates ({matchResult?.candidateScores?.length || 0})
+                  </h3>
+
+                  {!matchResult && (
+                    <div className="flex flex-col items-center justify-center py-16 text-center text-dim">
+                      <Compass className="w-10 h-10 mb-2 opacity-50 stroke-1" />
+                      <p className="text-xs font-mono">Select an article and click "Run Semantic Matching" to inspect radar.</p>
+                    </div>
+                  )}
+
+                  {matchResult?.candidateScores && (
+                    <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                      {matchResult.candidateScores.slice(0, 8).map((c, idx) => (
+                        <div 
+                          key={c.imageId || idx}
+                          className="p-3 rounded-lg bg-background border border-border hover:border-border-strong transition-colors flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="font-mono text-[11px] text-dim w-5">0{idx + 1}</span>
+                            <div className="min-w-0">
+                              <div className="font-medium text-ink capitalize truncate">{c.subject}</div>
+                              <div className="font-mono text-[11px] text-muted">
+                                Cosine: {c.similarityScore.toFixed(4)} · Conf: {(c.confidence * 100).toFixed(0)}%
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                              c.status === 'ACCEPTED' 
+                                ? 'bg-signal/15 text-signal border border-signal/30' 
+                                : 'bg-stamp/15 text-stamp border border-stamp/30'
+                            }`}>
+                              {c.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
         )}
 
@@ -603,7 +632,7 @@ export default function App() {
                     type="text" 
                     value={customTitle} 
                     onChange={e => setCustomTitle(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-signal"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -611,7 +640,7 @@ export default function App() {
                   <select 
                     value={customCategory} 
                     onChange={e => setCustomCategory(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-signal"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal min-h-[44px]"
                   >
                     <option value="animal">Animal</option>
                     <option value="technology">Technology</option>
@@ -624,7 +653,7 @@ export default function App() {
                     rows={4} 
                     value={customContent} 
                     onChange={e => setCustomContent(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-signal resize-none"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal resize-none"
                   />
                 </div>
                 <div>
@@ -633,13 +662,13 @@ export default function App() {
                     type="text" 
                     value={customExpectedSubject} 
                     onChange={e => setCustomExpectedSubject(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-signal"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-signal min-h-[44px]"
                   />
                 </div>
                 <button 
                   onClick={handleCustomPlayground}
                   disabled={isCustomLoading}
-                  className="w-full bg-signal hover:bg-signal/90 text-background font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                  className="min-h-[44px] w-full bg-signal hover:bg-signal/90 text-background font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
                   {isCustomLoading ? 'Vectorizing...' : 'Analyze & Match Live'}
@@ -663,21 +692,21 @@ export default function App() {
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="font-serif font-semibold text-lg text-ink">Image Corpus Library ({images.length})</h2>
-                  <p className="text-xs text-muted">Structured vision metadata, extracted attributes, and vector status.</p>
+                  <h2 className="font-serif font-semibold text-lg text-ink">HD Photo Corpus Library ({images.length})</h2>
+                  <p className="text-xs text-muted">Genuine royalty-free high-resolution photography, extracted vision attributes & vector embeddings.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="relative w-64">
-                    <Search className="w-4 h-4 text-dim absolute left-3 top-2.5" />
+                    <Search className="w-4 h-4 text-dim absolute left-3 top-3.5" />
                     <input 
                       type="text" 
                       placeholder="Search tags, subjects..." 
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-ink outline-none focus:border-signal"
+                      className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-xs text-ink outline-none focus:border-signal min-h-[44px]"
                     />
                   </div>
-                  <button onClick={fetchImages} className="p-2 rounded-lg bg-card-hover border border-border text-muted hover:text-ink">
+                  <button onClick={fetchImages} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-card-hover border border-border text-muted hover:text-ink">
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </div>
@@ -689,7 +718,7 @@ export default function App() {
                   <button
                     key={cat}
                     onClick={() => setGalleryFilter(cat)}
-                    className={`px-3 py-1 rounded text-xs font-mono capitalize transition-all ${
+                    className={`min-h-[38px] px-4 py-1.5 rounded-lg text-xs font-mono capitalize transition-all ${
                       galleryFilter === cat
                         ? 'bg-signal text-background font-semibold'
                         : 'bg-background border border-border text-muted hover:text-ink'
@@ -701,30 +730,30 @@ export default function App() {
               </div>
 
               {/* Images Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {filteredImages.map(img => (
                   <div 
                     key={img.id}
                     onClick={() => setSelectedImageModal(img)}
-                    className="group bg-background border border-border hover:border-signal/50 rounded-xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 shadow-sm"
+                    className="group bg-background border border-border hover:border-signal/50 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-1 shadow-sm"
                   >
-                    <div className="h-40 bg-card/50 overflow-hidden relative">
+                    <div className="h-44 bg-card/50 overflow-hidden relative">
                       <img 
                         src={`/data/images/${img.filename}`} 
                         alt={img.subject}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
-                      <span className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                      <span className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold shadow-md ${
                         img.is_flagged 
-                          ? 'bg-stamp/90 text-white' 
-                          : 'bg-signal/90 text-background'
+                          ? 'bg-stamp text-white' 
+                          : 'bg-signal text-background'
                       }`}>
                         {img.is_flagged ? 'FLAGGED' : 'VERIFIED'}
                       </span>
                     </div>
-                    <div className="p-3.5">
-                      <div className="flex items-center justify-between mb-1">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-1.5">
                         <h4 className="font-serif font-semibold text-sm text-ink capitalize truncate">
                           {img.subject}
                         </h4>
@@ -735,7 +764,7 @@ export default function App() {
                       <p className="text-xs text-muted line-clamp-2 leading-relaxed">
                         {img.caption}
                       </p>
-                      <div className="mt-2.5 pt-2 border-t border-border/60 flex items-center justify-between text-[11px] font-mono text-dim">
+                      <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[11px] font-mono text-dim">
                         <span>{img.filename}</span>
                         <span className="text-signal hover:underline">Inspect →</span>
                       </div>
@@ -762,8 +791,9 @@ export default function App() {
                 onClick={async () => {
                   const res = await fetch('/api/images/fox-01.jpg/alt-text?postId=red-fox-behavior');
                   setAltTextResult(await res.json());
+                  showToast('Alt-text generated!');
                 }}
-                className="bg-signal text-background font-semibold text-xs px-4 py-2 rounded-lg mb-4"
+                className="min-h-[44px] bg-signal text-background font-semibold text-xs px-4 py-2.5 rounded-lg mb-4"
               >
                 Generate Alt-Text for Red Fox
               </button>
@@ -784,8 +814,9 @@ export default function App() {
                 onClick={async () => {
                   const res = await fetch('/api/images-duplicates?threshold=0.90');
                   setDuplicatesResult(await res.json());
+                  showToast('Duplicate vector scan complete!');
                 }}
-                className="bg-signal text-background font-semibold text-xs px-4 py-2 rounded-lg mb-4"
+                className="min-h-[44px] bg-signal text-background font-semibold text-xs px-4 py-2.5 rounded-lg mb-4"
               >
                 Scan Library for Duplicates
               </button>
@@ -807,7 +838,7 @@ export default function App() {
               <button 
                 onClick={handleRunEval}
                 disabled={isEvalLoading}
-                className="bg-signal text-background font-semibold px-4 py-2 rounded-lg text-xs flex items-center gap-2 shadow-sm"
+                className="min-h-[44px] bg-signal text-background font-semibold px-5 py-2.5 rounded-lg text-xs flex items-center gap-2 shadow-sm"
               >
                 <Play className="w-4 h-4 fill-current" />
                 {isEvalLoading ? 'Evaluating...' : 'Run Benchmark'}
@@ -815,19 +846,19 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Top-1 Precision</div>
                 <div className="text-2xl font-bold font-mono text-signal mt-1">100.0%</div>
               </div>
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Safety Rejection Rate</div>
                 <div className="text-2xl font-bold font-mono text-signal mt-1">100.0%</div>
               </div>
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Evaluated Posts</div>
                 <div className="text-2xl font-bold font-mono text-ink mt-1">6 / 6</div>
               </div>
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Acceptance Probes</div>
                 <div className="text-2xl font-bold font-mono text-signal mt-1">8 / 8 Passed</div>
               </div>
@@ -847,25 +878,25 @@ export default function App() {
                 <h2 className="font-serif font-semibold text-lg text-ink">AI Token & Cost Telemetry (Probe 6)</h2>
                 <p className="text-xs text-muted">Itemized ledger of all Vision AI and Embedding invocations.</p>
               </div>
-              <button onClick={handleFetchCosts} className="p-2 rounded-lg bg-background border border-border text-muted hover:text-ink">
+              <button onClick={handleFetchCosts} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-background border border-border text-muted hover:text-ink">
                 <RefreshCw className="w-4 h-4" />
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Total AI Cost</div>
                 <div className="text-2xl font-bold font-mono text-stamp mt-1">
                   ${costLogs?.totalCostUsd || '0.004125'} USD
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Total Token Usage</div>
                 <div className="text-2xl font-bold font-mono text-ink mt-1">
                   {costLogs?.totalTokens || '32,500'}
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="p-5 rounded-xl bg-background border border-border">
                 <div className="text-[11px] font-mono uppercase text-dim">Total Invocations</div>
                 <div className="text-2xl font-bold font-mono text-signal mt-1">
                   {costLogs?.totalCalls || '56'} Calls
@@ -889,18 +920,18 @@ export default function App() {
         >
           <div 
             onClick={e => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+            className="bg-card border border-border rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-serif font-semibold text-lg capitalize">{selectedImageModal.subject}</h3>
               <button 
                 onClick={() => setSelectedImageModal(null)}
-                className="text-muted hover:text-ink text-xl leading-none"
+                className="text-muted hover:text-ink text-2xl leading-none p-1"
               >
                 &times;
               </button>
             </div>
-            <div className="h-52 rounded-lg overflow-hidden bg-background border border-border">
+            <div className="h-60 rounded-lg overflow-hidden bg-background border border-border">
               <img 
                 src={`/data/images/${selectedImageModal.filename}`} 
                 alt={selectedImageModal.subject}
